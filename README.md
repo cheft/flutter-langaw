@@ -1,8 +1,11 @@
-# langaw
+# Langaw
 
-A new Flutter project.
+A flutter game by flame.
 
-## Getting Started
+## Tutorials
+https://www.bugcatt.com/archives/731
+
+## FLutter Getting Started
 
 This project is a starting point for a Flutter application.
 
