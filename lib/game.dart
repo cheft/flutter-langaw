@@ -25,6 +25,7 @@ import 'package:langaw/components/highscore.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:langaw/components/musicbtn.dart';
 import 'package:langaw/components/soundbtn.dart';
+import 'package:vibration/vibration.dart';
 
 class LangawGame extends Game {
   final SharedPreferences storage;
@@ -195,6 +196,8 @@ class LangawGame extends Game {
       soundButton.onTapDown();
       isHandled = true;
     }
+
+    Vibration.vibrate(amplitude: 16, duration: 50); // 震动: 强度、时间
   }
 
   void spawnFly() {
