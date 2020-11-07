@@ -6,6 +6,7 @@ import 'package:langaw/game.dart';
 class MachoFly extends Fly {
 
   double get speed => game.tileSize * 2.5;
+  int score = 4;
 
   MachoFly(LangawGame game, double x, double y) : super(game, x, y) {
     flyingSprite = List();

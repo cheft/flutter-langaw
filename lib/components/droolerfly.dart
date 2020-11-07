@@ -5,6 +5,7 @@ import 'package:langaw/game.dart';
 
 class DroolerFly extends Fly {
   double get speed => game.tileSize * 1.5;
+  int score = 5;
 
   DroolerFly(LangawGame game, double x, double y) : super(game, x, y) {
     flyingSprite = List();

@@ -4,6 +4,7 @@ import 'package:langaw/components/fly.dart';
 import 'package:langaw/game.dart';
 
 class HungryFly extends Fly {
+  int score = 2;
   HungryFly(LangawGame game, double x, double y) : super(game, x, y) {
     flyingSprite = List();
     flyingSprite.add(Sprite('flies/hungry-fly-1.png'));

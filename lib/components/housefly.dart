@@ -4,6 +4,8 @@ import 'package:langaw/components/fly.dart';
 import 'package:langaw/game.dart';
 
 class HouseFly extends Fly {
+  int score = 2;
+
   HouseFly(LangawGame game, double x, double y) : super(game, x, y) {
     flyingSprite = List();
     flyingSprite.add(Sprite('flies/house-fly-1.png'));

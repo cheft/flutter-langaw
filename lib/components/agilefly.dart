@@ -6,6 +6,7 @@ import 'package:langaw/game.dart';
 class AgileFly extends Fly {
 
   double get speed => game.tileSize * 5;
+  int score = 3;
 
   AgileFly(LangawGame game, double x, double y) : super(game, x, y) {
     flyingSprite = List();

@@ -2,9 +2,13 @@ import 'dart:ui';
 import 'package:langaw/game.dart';
 import 'package:flame/sprite.dart';
 import 'package:langaw/view.dart';
+import 'package:langaw/components/callout.dart';
+import 'package:flame/flame.dart';
 
 class Fly {
   final LangawGame game;
+  Callout callout;
+  
   Rect flyRect;
   bool isDead = false;
   bool isOffScreen = false;
@@ -12,12 +16,15 @@ class Fly {
   List flyingSprite;
   Sprite deadSprite;
   double flyingSpriteIndex = 0;
+  int calloutIndex = 0;
 
   double get speed => game.tileSize * 3;
+  int score = 1;
   Offset targetLocation;
 
   Fly(this.game, double x, double y) {
     setTargetLocation();
+    callout = Callout(this);
   }
 
   void render(Canvas c) {
@@ -27,21 +34,32 @@ class Fly {
       // TODO:
       flyingSprite[flyingSpriteIndex.toInt()].renderRect(c, flyRect.inflate(2));
     }
+
+    if (game.activeView == View.playing) {
+      callout.render(c);
+    }
   }
 
   void update(double t) {
     if (isDead) {
       flyRect = flyRect.translate(0, game.tileSize * 12 * t);
     } else {
+      // TODO 有bug
       // flyingSpriteIndex += 30 * t;
       // print(flyingSpriteIndex);
       // if (flyingSpriteIndex >= 2) {
       //   flyingSpriteIndex -= 2;
       // }
-      if (flyingSpriteIndex == 1) {
+      
+      if (calloutIndex % 4 == 0) {
         flyingSpriteIndex = 0;
       } else {
         flyingSpriteIndex = 1;
+      }
+      if (calloutIndex >= 8) {
+        calloutIndex = 0;
+      } else {
+        calloutIndex += 1;
       }
 
       // TODO: 解析
@@ -59,13 +77,23 @@ class Fly {
     if (flyRect.top > game.screenSize.height) {
       isOffScreen = true;
     }
+
+    callout.update(t);
   }
 
   void onTapDown() {
     if (!isDead) {
+      if (game.soundButton.isEnabled) {
+        Flame.audio.play('sfx/ouch' + (game.rnd.nextInt(11) + 1).toString() + '.ogg');
+      }
       isDead = true;
       if (game.activeView == View.playing) {
-        game.score += 1;
+        game.score += this.score;
+
+        if (game.score > (game.storage.getInt('highscore') ?? 0)) {
+          game.storage.setInt('highscore', game.score);
+          game.highscoreDisplay.updateHighscore();
+        }
       }
     }
   }

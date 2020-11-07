@@ -19,8 +19,19 @@ import 'package:langaw/components/help.dart';
 import 'package:langaw/views/help.dart';
 import 'package:langaw/views/credits.dart';
 import 'package:langaw/components/score.dart';
+import 'package:langaw/controllers/spawner.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:langaw/components/highscore.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:langaw/components/musicbtn.dart';
+import 'package:langaw/components/soundbtn.dart';
 
 class LangawGame extends Game {
+  final SharedPreferences storage;
+  HighscoreDisplay highscoreDisplay;
+  AudioPlayer homeBGM;
+  AudioPlayer playingBGM;
+
   Size screenSize;
   double tileSize;
   Backyard backyard;
@@ -37,18 +48,32 @@ class LangawGame extends Game {
   HelpButton helpButton;
   CreditsButton creditsButton;
   ScoreDisplay scoreDisplay;
+  FlySpawner spawner;
+  MusicButton musicButton;
+  SoundButton soundButton;
 
   bool isHandled = false;
   bool didHitAFly = true;
 
   int score;
 
-  LangawGame() {
+  LangawGame(this.storage) {
     initialize();
   }
 
   void initialize() async {
     resize(await Flame.util.initialDimensions());
+    //　背景音乐会报错，有bug
+    // homeBGM = await Flame.audio.loop('bgm/home.mp3', volume: .25);
+    // homeBGM.pause();
+    // playingBGM = await Flame.audio.loop('bgm/playing.mp3', volume: .25);
+    // playingBGM.pause();
+    // playHomeBGM();
+
+    flies = List<Fly>();
+    rnd = Random();
+
+    highscoreDisplay = HighscoreDisplay(this);
     backyard = Backyard(this);
     homeView = HomeView(this);
     lostView = LostView(this);
@@ -58,9 +83,9 @@ class LangawGame extends Game {
     helpButton = HelpButton(this);
     creditsButton = CreditsButton(this);
     scoreDisplay = ScoreDisplay(this);
-
-    flies = List<Fly>();
-    rnd = Random();
+    spawner = FlySpawner(this);
+    musicButton = MusicButton(this);
+    soundButton = SoundButton(this);
   }
 
   void render(Canvas canvas) {
@@ -88,14 +113,15 @@ class LangawGame extends Game {
     } else if (activeView == View.credits) {
       creditsView.render(canvas);
     }
-  }
 
+    musicButton.render(canvas);
+    soundButton.render(canvas);
+    highscoreDisplay.render(canvas);
+  }
 
   void update(double t) {
     backyard.update(t);
-    if (flies.length == 0) {
-      spawnFly();
-    }
+    spawner.update(t);
     flies.forEach((Fly fly) => fly.update(t));
     flies.removeWhere((Fly fly) => fly.isOffScreen);
 
@@ -115,9 +141,17 @@ class LangawGame extends Game {
         isHandled = true;
       }
     } else {
+      if (activeView == View.playing && !didHitAFly) {
+        if (soundButton.isEnabled) {
+          Flame.audio.play('sfx/haha' + (rnd.nextInt(5) + 1).toString() + '.ogg');
+        }
+        // playHomeBGM();
+        activeView = View.lost;
+      }
       didHitAFly = false;
     }
 
+    // 击中苍蝇
     flies.forEach((Fly fly) {
       if (fly.flyRect.contains(d.globalPosition)) {
         fly.onTapDown();
@@ -125,10 +159,6 @@ class LangawGame extends Game {
         didHitAFly = true;
       }
     });
-
-    if (activeView == View.playing && !didHitAFly) {
-      activeView = View.lost;
-    }
 
     // 教程按钮
     if (!isHandled && helpButton.rect.contains(d.globalPosition)) {
@@ -146,11 +176,24 @@ class LangawGame extends Game {
       }
     }
 
+    // 感谢帮助返回主界面
     if (!isHandled) {
       if (activeView == View.help || activeView == View.credits) {
         activeView = View.home;
         isHandled = true;
       }
+    }
+
+    // 音乐按钮
+    if (!isHandled && musicButton.rect.contains(d.globalPosition)) {
+      musicButton.onTapDown();
+      isHandled = true;
+    }
+
+    // 音效按钮
+    if (!isHandled && soundButton.rect.contains(d.globalPosition)) {
+      soundButton.onTapDown();
+      isHandled = true;
     }
   }
 
@@ -175,5 +218,17 @@ class LangawGame extends Game {
       flies.add(HungryFly(this, x, y));
       break;
     }
+  }
+
+  void playHomeBGM() {
+    playingBGM.pause();
+    // playingBGM.seek(Duration.zero);
+    homeBGM.resume();
+  }
+
+  void playPlayingBGM() {
+    homeBGM.pause();
+    // homeBGM.seek(Duration.zero);
+    playingBGM.resume();
   }
 }
